@@ -1,11 +1,33 @@
-import socket
+#from _typeshed import Self
+import socketserver
+import logging
 
-SERVER_PORT = ''
-SERVER_IP = ''
+PORT = 9090
+HOST = 'localhost'
+#IP = ''
 
-try:
+class MyTCPServer(socketserver.BaseRequestHandler):
+    def servershutdown(self):
+        self.__shutdown_request = True
+        self.__is_shut_down.wait()
+    def handle(self):
+            try:
+                self.data = self.request.recv(1024).strip()
+                if self.data == 'shutdown':
+                    servershutdown()                   
 
-    listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-except socket.error, e:
-    print("[ERROR] %s\n" % e[1])
+                print("{} wrote:".format(self.client_address[0]))
+                print(self.data)
+
+                self.request.sendall(self.data.upper(), )
+            except socketserver.error as e:
+                logging.error("[ERROR] %s\n" % e[1])
+            #HostIP = socket.gethostbyname(hostname)
+            #        listener.bind(HostIP)
+   
+
+if __name__ == "__main__":
+          with socketserver.TCPServer((HOST,PORT),MyTCPServer) as server:
+            #socketserver.TCPServer.allow_reuse_address = True
+            server.serve_forever()
+  
